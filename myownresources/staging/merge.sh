@@ -10,10 +10,10 @@ echo "Verificando cambios pendientes..."
 git status -s  # Esto muestra el estado de los archivos (modificados, no rastreados, etc.)
 
 # Si git status encuentra cambios pendientes
-if [[ $(git status -s) ]]; then
-    echo "Error: Hay cambios pendientes en tu área de trabajo. Por favor, confirma tus cambios antes de proceder."
-    exit 1
-fi
+# if [[ $(git status -s) ]]; then
+    # echo "Error: Hay cambios pendientes en tu área de trabajo. Por favor, confirma tus cambios antes de proceder."
+    # exit 1
+# fi
 
 # Paso 2: Cambiar a la rama de destino (master)
 echo "Cambiando a la rama $TARGET_BRANCH..."
