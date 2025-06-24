@@ -14,7 +14,7 @@ image_repositories = []
 [staging.deploy]
 [staging.deploy.parameters]
 stack_name = "todo-list-aws-staging"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-ravzlyu7wduq"
+s3_bucket = "aws-sam-cli-managed-production-samclisourcebucket-upt09go84tay"
 s3_prefix = "todo-list-aws"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
