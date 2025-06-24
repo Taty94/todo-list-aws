@@ -10,6 +10,7 @@ python -m pip install flake8-polyfill
 python -m pip install bandit
 #For integration testing
 python -m pip install pytest
+python -m pip install requests
 
 
 pwd
