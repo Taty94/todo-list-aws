@@ -18,7 +18,7 @@ s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-ravzlyu7wduq"
 s3_prefix = "todo-list-aws"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Stage=\"staging\" ExistingTableName=\"TodosDynamoDbTable\""
+parameter_overrides = "Stage=\"staging\""
 image_repositories = []
 
 [production]
