@@ -17,13 +17,14 @@ RED="\033[1;31m"
 GREEN="\033[1;32m"
 
 print_msg "$YELLOW" "🔍 Verificando cambios pendientes..."
-CHANGES=$(git status -s)
-
+CHANGES=$(git status -s | grep -v '^??')
 if [[ -n "$CHANGES" ]]; then
-    print_msg "$RED" "⚠️  Hay cambios sin confirmar en el repositorio local:"
+    print_msg "$RED" "⚠️  Hay archivos modificados sin confirmar:"
     echo "$CHANGES"
-    print_msg "$RED" "🔒 Cancela el proceso o limpia el entorno antes de continuar."
+    print_msg "$RED" "🔒 Cancela el proceso o commitea esos cambios si son necesarios."
     exit 1
+else
+    print_msg "$YELLOW" "ℹ️ Solo hay archivos no rastreados (??), se continuará con el merge."
 fi
 
 print_msg "$YELLOW" "🛠 Cambiando a la rama '$TARGET_BRANCH'..."
