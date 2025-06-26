@@ -1,48 +1,64 @@
 #!/bin/bash
 
 # Variables
-BRANCH_NAME="develop"  # La rama de desarrollo que quieres mergear
-TARGET_BRANCH="master"  # La rama de producción (master)
-#RELEASE_TAG="v1.0.0"    # La etiqueta de la versión, puede ser automática o manual
+BRANCH_NAME="develop"
+TARGET_BRANCH="master"
+GITHUB_TOKEN="${GITHUB_TOKEN}"
 
-# Paso 1: Verificar que no haya cambios pendientes en el repositorio
-echo "Verificando cambios pendientes..."
-git status -s  # Esto muestra el estado de los archivos (modificados, no rastreados, etc.)
+# RELEASE_TAG="v1.0.0"
 
-# Si git status encuentra cambios pendientes
-# if [[ $(git status -s) ]]; then
-    # echo "Error: Hay cambios pendientes en tu área de trabajo. Por favor, confirma tus cambios antes de proceder."
-    # exit 1
-# fi
+# Función para imprimir mensajes en color
+function print_msg() {
+    COLOR=$1
+    shift
+    echo -e "${COLOR}$* \033[0m"
+}
 
-# Paso 2: Cambiar a la rama de destino (master)
-echo "Cambiando a la rama $TARGET_BRANCH..."
-git checkout $TARGET_BRANCH
+YELLOW="\033[1;33m"
+RED="\033[1;31m"
+GREEN="\033[1;32m"
 
-# Paso 3: Traer los últimos cambios de la rama master para evitar conflictos
-echo "Actualizando la rama $TARGET_BRANCH con los últimos cambios del remoto..."
-git pull origin $TARGET_BRANCH
-
-# Paso 4: Hacer el merge de la rama de desarrollo (o cualquier rama de características) a master
-echo "Haciendo merge de la rama $BRANCH_NAME a $TARGET_BRANCH..."
-git merge origin/$BRANCH_NAME
-
-# Paso 5: Verificar si el merge fue exitoso
-if [[ $? -ne 0 ]]; then
-    echo "Error: El merge ha fallado. No se puede continuar."
+print_msg "$YELLOW" "🔍 Verificando cambios pendientes..."
+CHANGES=$(git status -s | grep -v '^??')
+if [[ -n "$CHANGES" ]]; then
+    print_msg "$RED" "⚠️  Hay archivos modificados sin confirmar:"
+    echo "$CHANGES"
+    print_msg "$RED" "🔒 Cancela el proceso o commitea esos cambios si son necesarios."
     exit 1
 else
-    echo "Merge exitoso."
+    print_msg "$YELLOW" "ℹ️ Solo hay archivos no rastreados (??), se continuará con el merge."
 fi
 
-# Paso 6: Crear una etiqueta para la versión de lanzamiento (Release) si es necesario
-#echo "Creando etiqueta para la versión $RELEASE_TAG..."
-#git tag -a $RELEASE_TAG -m "Versión de lanzamiento: $RELEASE_TAG"
+print_msg "$YELLOW" "🛠 Cambiando a la rama '$TARGET_BRANCH'..."
+git checkout $TARGET_BRANCH || { print_msg "$RED" "❌ Error al cambiar a la rama $TARGET_BRANCH."; exit 1; }
 
-# Paso 7: Subir los cambios y la nueva etiqueta a GitHub (o el repositorio remoto)
-echo "Subiendo cambios y la etiqueta al repositorio remoto..."
+print_msg "$YELLOW" "⬇️  Obteniendo últimos cambios de '$TARGET_BRANCH'..."
+git pull origin $TARGET_BRANCH || { print_msg "$RED" "❌ Error al hacer pull de $TARGET_BRANCH."; exit 1; }
+
+print_msg "$YELLOW" "🔀 Haciendo merge de '$BRANCH_NAME' a '$TARGET_BRANCH'..."
+git merge origin/$BRANCH_NAME
+
+if [[ $? -ne 0 ]]; then
+    print_msg "$RED" "❌ El merge ha fallado. Resuelve los conflictos manualmente."
+    exit 1
+else
+    print_msg "$GREEN" "✅ Merge exitoso."
+fi
+
+# Optional: Etiquetado
+# print_msg "$YELLOW" "🏷️  Creando etiqueta de versión $RELEASE_TAG..."
+# git tag -a "$RELEASE_TAG" -m "Versión de lanzamiento: $RELEASE_TAG"
+
+print_msg "$YELLOW" "🚀 Subiendo cambios al repositorio remoto..."
+git remote set-url origin https://${GITHUB_TOKEN}@github.com/Taty94/todo-list-aws.git
 git push origin $TARGET_BRANCH
-#git push origin $RELEASE_TAG
 
-# Paso 8: Confirmación final
-echo "Se ha subido a producción."
+if [[ $? -ne 0 ]]; then
+    print_msg "$RED" "❌ Error al hacer push al repositorio remoto. Verifica credenciales o conexión."
+    exit 1
+fi
+
+# print_msg "$YELLOW" "📤 Subiendo etiqueta..."
+# git push origin $RELEASE_TAG
+
+print_msg "$GREEN" "🎉 Promoción completada. La versión ha sido enviada a producción."
