@@ -3,6 +3,8 @@
 # Variables
 BRANCH_NAME="develop"
 TARGET_BRANCH="master"
+GITHUB_TOKEN="${GITHUB_TOKEN}"
+
 # RELEASE_TAG="v1.0.0"
 
 # Función para imprimir mensajes en color
@@ -48,6 +50,7 @@ fi
 # git tag -a "$RELEASE_TAG" -m "Versión de lanzamiento: $RELEASE_TAG"
 
 print_msg "$YELLOW" "🚀 Subiendo cambios al repositorio remoto..."
+git remote set-url origin https://${GITHUB_TOKEN}@github.com/Taty94/todo-list-aws.git
 git push origin $TARGET_BRANCH
 
 if [[ $? -ne 0 ]]; then
