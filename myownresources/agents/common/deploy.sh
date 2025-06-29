@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Activar entorno virtual
-source todo-list-aws/bin/activate
-
 # Activar depuración (imprime cada comando que se ejecuta)
 set -x
 
