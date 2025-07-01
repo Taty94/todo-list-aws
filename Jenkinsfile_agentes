@@ -10,7 +10,13 @@ pipeline {
             agent {label 'principal'}
             steps {
                 git branch: 'master', url: 'https://github.com/Taty94/todo-list-aws'
+                sh """
+                    git clone --single-branch --branch production https://github.com/Taty94/todo-list-aws-config.git config-repo
+                    cp config-repo/samconfig.toml .
+                    rm -rf config-repo
+                """
                 stash name: 'code', includes: 'src/**,test/integration/**,myownresources/**,template.yaml,samconfig.toml'
+                sh 'git checkout -- samconfig.toml'
             }
             post {
                 always {
