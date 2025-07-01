@@ -1,0 +1,25 @@
+def printAgentInfo() {
+    def whoami
+    def hostname
+    def workspace = env.WORKSPACE
+
+    if (isUnix()) {
+        whoami = sh(script: 'whoami', returnStdout: true).trim()
+        hostname = sh(script: 'hostname', returnStdout: true).trim()
+    } else {
+        whoami = bat(script: 'whoami', returnStdout: true).trim()
+        hostname = bat(script: 'hostname', returnStdout: true).trim()
+    }
+
+    def box = """ 
+    +-----------------------------------+ 
+    |          Pipeline Info           | 
+    +-----------------------------------+ 
+    | User:      ${whoami}             | 
+    | Hostname:  ${hostname}           | 
+    | Workspace: ${workspace}          | 
+    +-----------------------------------+ 
+    """ 
+    echo box
+}
+return this
