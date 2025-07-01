@@ -10,8 +10,15 @@ pipeline {
         stage ('Get Code') {
             agent {label 'principal'}
             steps {
+                cleanWs()
                 git branch: 'develop', url: 'https://github.com/Taty94/todo-list-aws'
+                sh """
+                    git clone --single-branch --branch staging https://github.com/Taty94/todo-list-aws-config.git config-repo
+                    cp config-repo/samconfig.toml .
+                    rm -rf config-repo
+                """
                 stash name: 'code', includes: 'src/**,test/integration/**,myownresources/**,template.yaml,samconfig.toml'
+                sh 'git checkout -- samconfig.toml'
             }
         }
         stage('Static Test') {
@@ -41,6 +48,7 @@ pipeline {
             agent {label 'aws-agent'}
             steps {
                 unstash 'code'
+                sh 'cat samconfig.toml'
                 sh 'bash myownresources/agents/common/build.sh'
                 sh 'bash myownresources/agents/common/deploy.sh'
                 sh "bash myownresources/agents/common/post-deploy.sh ${STAGE} ${AWS_REGION}"
