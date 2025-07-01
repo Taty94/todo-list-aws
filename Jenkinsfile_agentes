@@ -1,0 +1,84 @@
+pipeline {
+    agent none
+    options { skipDefaultCheckout() }
+    environment {
+        AWS_REGION = 'us-east-1'
+        STAGE = 'staging'
+        GITHUB_TOKEN = credentials('github-token')
+    }
+    stages {
+        stage ('Get Code') {
+            agent {label 'principal'}
+            steps {
+                git branch: 'develop', url: 'https://github.com/Taty94/todo-list-aws'
+                stash name: 'code', includes: 'src/**,test/integration/**,myownresources/**,template.yaml,samconfig.toml'
+            }
+        }
+        stage('Static Test') {
+            agent {label 'static-agent'}
+            steps {
+                unstash 'code'
+                echo 'Setup Virtualenv for testing'
+                sh "bash myownresources/common/setup.sh"
+                echo 'Static program analysis:'
+                sh "bash myownresources/staging/static_test.sh"
+                recordIssues tools: [
+                        flake8(pattern: 'flake8.out', name: 'Flake8'),
+                        pyLint(pattern: 'bandit.out', name: 'Bandit')
+                    ],ignoreQualityGate: true
+            }
+            post {
+                always {
+                    cleanWs()
+                }
+            }
+        }
+        stage('Deploy') {
+            agent {label 'aws-agent'}
+            steps {
+                unstash 'code'
+                sh 'bash myownresources/agents/common/build.sh'
+                sh 'bash myownresources/agents/common/deploy.sh'
+                sh "bash myownresources/agents/common/post-deploy.sh ${STAGE} ${AWS_REGION}"
+                stash name: 'api-url', includes: 'base_url.txt'
+            }
+            post {
+                always {
+                    cleanWs()
+                }
+            }
+        }
+        stage('Integration Test'){
+            agent {label 'integration-agent'}
+            steps{
+                unstash 'code'
+                unstash 'api-url'
+                echo 'Setup Virtualenv for testing'
+                sh "bash myownresources/common/setup.sh"
+                script {
+                    def BASE_URL = readFile('base_url.txt').trim()
+                    echo "$BASE_URL"
+                    echo 'Initiating Integration Tests'
+                    sh "bash myownresources/staging/integration.sh $BASE_URL"
+                }
+            }
+            post {
+                always {
+                    cleanWs()
+                }
+            }
+        }
+        stage('Promote'){
+            agent {label 'principal'}
+            steps{
+                echo 'Starting promotion to production...'
+                sh "bash myownresources/staging/merge.sh"
+            }
+            post {
+                always {
+                    cleanWs()
+                }
+            }
+        }
+    }
+}
