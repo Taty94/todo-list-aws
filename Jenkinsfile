@@ -56,7 +56,7 @@ pipeline {
         stage('Promote'){
             steps{
                 echo 'Iniciando promoción a producción...'
-                sh "bash myownresources/staging/mergev2.sh"
+                sh "bash myownresources/staging/merge.sh"
             }
         }
     }
