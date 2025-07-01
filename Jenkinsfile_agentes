@@ -29,6 +29,10 @@ pipeline {
             }
             post {
                 always {
+                    script {
+                        def utils = load 'myownresources/common/utils'
+                        utils.printAgentInfo()
+                    }
                     cleanWs()
                 }
             }
@@ -44,6 +48,10 @@ pipeline {
             }
             post {
                 always {
+                    script {
+                        def utils = load 'myownresources/common/utils'
+                        utils.printAgentInfo()
+                    }
                     cleanWs()
                 }
             }
@@ -64,6 +72,10 @@ pipeline {
             }
             post {
                 always {
+                    script {
+                        def utils = load 'myownresources/common/utils'
+                        utils.printAgentInfo()
+                    }
                     cleanWs()
                 }
             }
@@ -76,6 +88,10 @@ pipeline {
             }
             post {
                 always {
+                    script {
+                        def utils = load 'myownresources/common/utils'
+                        utils.printAgentInfo()
+                    }
                     cleanWs()
                 }
             }
