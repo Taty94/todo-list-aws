@@ -1,64 +1,15 @@
 #!/bin/bash
 
+set -x
+
 # Variables
-BRANCH_NAME="develop"
-TARGET_BRANCH="master"
 GITHUB_TOKEN="${GITHUB_TOKEN}"
 
-# RELEASE_TAG="v1.0.0"
-
-# Función para imprimir mensajes en color
-function print_msg() {
-    COLOR=$1
-    shift
-    echo -e "${COLOR}$* \033[0m"
-}
-
-YELLOW="\033[1;33m"
-RED="\033[1;31m"
-GREEN="\033[1;32m"
-
-print_msg "$YELLOW" "🔍 Verificando cambios pendientes..."
-CHANGES=$(git status -s | grep -v '^??')
-if [[ -n "$CHANGES" ]]; then
-    print_msg "$RED" "⚠️  Hay archivos modificados sin confirmar:"
-    echo "$CHANGES"
-    print_msg "$RED" "🔒 Cancela el proceso o commitea esos cambios si son necesarios."
-    exit 1
-else
-    print_msg "$YELLOW" "ℹ️ Solo hay archivos no rastreados (??), se continuará con el merge."
-fi
-
-print_msg "$YELLOW" "🛠 Cambiando a la rama '$TARGET_BRANCH'..."
-git checkout $TARGET_BRANCH || { print_msg "$RED" "❌ Error al cambiar a la rama $TARGET_BRANCH."; exit 1; }
-
-print_msg "$YELLOW" "⬇️  Obteniendo últimos cambios de '$TARGET_BRANCH'..."
-git pull origin $TARGET_BRANCH || { print_msg "$RED" "❌ Error al hacer pull de $TARGET_BRANCH."; exit 1; }
-
-print_msg "$YELLOW" "🔀 Haciendo merge de '$BRANCH_NAME' a '$TARGET_BRANCH'..."
-git merge origin/$BRANCH_NAME
-
-if [[ $? -ne 0 ]]; then
-    print_msg "$RED" "❌ El merge ha fallado. Resuelve los conflictos manualmente."
-    exit 1
-else
-    print_msg "$GREEN" "✅ Merge exitoso."
-fi
-
-# Optional: Etiquetado
-# print_msg "$YELLOW" "🏷️  Creando etiqueta de versión $RELEASE_TAG..."
-# git tag -a "$RELEASE_TAG" -m "Versión de lanzamiento: $RELEASE_TAG"
-
-print_msg "$YELLOW" "🚀 Subiendo cambios al repositorio remoto..."
+git branch -a
+git checkout -b develop origin/develop
+git checkout -b master origin/master
+git merge --no-commit develop
+git restore --source=HEAD --staged --worktree Jenkinsfile
+git commit -m "Merge develop into master sin cambios en Jenkinsfile"
 git remote set-url origin https://${GITHUB_TOKEN}@github.com/Taty94/todo-list-aws.git
-git push origin $TARGET_BRANCH
-
-if [[ $? -ne 0 ]]; then
-    print_msg "$RED" "❌ Error al hacer push al repositorio remoto. Verifica credenciales o conexión."
-    exit 1
-fi
-
-# print_msg "$YELLOW" "📤 Subiendo etiqueta..."
-# git push origin $RELEASE_TAG
-
-print_msg "$GREEN" "🎉 Promoción completada. La versión ha sido enviada a producción."
+git push origin master 
