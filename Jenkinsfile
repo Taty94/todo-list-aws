@@ -22,10 +22,8 @@ pipeline {
 
         stage('Deploy') {
           steps {
-              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                 sh 'bash myownresources/common/build.sh'
                 sh 'bash myownresources/common/deploy.sh'
-              }
           }
         }
         stage('Integration Test'){
