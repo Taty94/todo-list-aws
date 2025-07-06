@@ -10,7 +10,6 @@ pipeline {
         stage ('Get Code') {
             agent {label 'principal'}
             steps {
-                cleanWs()
                 git branch: 'develop', url: 'https://github.com/Taty94/todo-list-aws'
                 sh """
                     git clone --single-branch --branch staging https://github.com/Taty94/todo-list-aws-config.git config-repo
